@@ -19,7 +19,7 @@ class LogPrinter:
             Logger.get_logger().error(error_message)
 
     @staticmethod
-    def download_tracks(tracks, _1, _2, _3):
+    def download_tracks(tracks, _1, _2, _3, _4):
         Logger.get_logger().info('Found {} files'.format(len(tracks)))
 
     @staticmethod

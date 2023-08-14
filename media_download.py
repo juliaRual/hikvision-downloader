@@ -48,9 +48,9 @@ def get_path_to_video_archive(cam_ip: str):
     return path_to_media_archive + cam_ip + '/'
 
 
-def download_media(auth_handler, cam_ip, utc_time_interval, content_type):
+def download_media(auth_handler, cam_ip, utc_time_interval, content_type, channel):
     tracks = get_all_tracks(auth_handler, cam_ip, utc_time_interval, content_type)
-    download_tracks(tracks, auth_handler, cam_ip, content_type)
+    download_tracks(tracks, auth_handler, cam_ip, content_type, channel)
 
 
 @logging_wrapper(before=LogPrinter.get_all_tracks)
@@ -83,11 +83,11 @@ def get_tracks_info(auth_handler, cam_ip, utc_time_interval, content_type):
 
 
 @logging_wrapper(before=LogPrinter.download_tracks)
-def download_tracks(tracks, auth_handler, cam_ip, content_type):
+def download_tracks(tracks, auth_handler, cam_ip, content_type, channel):
     for track in tracks:
         # TODO retry only N times
         while True:
-            if download_file_with_retry(auth_handler, cam_ip, track, content_type):
+            if download_file_with_retry(auth_handler, cam_ip, track, content_type, channel):
                 break
             else:
                 time.sleep(DELAY_AFTER_TIMEOUT_SECONDS)
@@ -95,9 +95,9 @@ def download_tracks(tracks, auth_handler, cam_ip, content_type):
         time.sleep(DELAY_BETWEEN_DOWNLOADING_FILES_SECONDS)
 
 
-def download_file_with_retry(auth_handler, cam_ip, track, content_type):
+def download_file_with_retry(auth_handler, cam_ip, track, content_type, channel):
     start_time_text = track.get_time_interval().to_local_time().to_filename_text()
-    file_name = get_path_to_video_archive(cam_ip) + '/' + start_time_text + '.' + content_type
+    file_name = get_path_to_video_archive(cam_ip) + '/' + str(channel) + '__' + start_time_text + '.' + content_type
     url_to_download = track.url_to_download()
 
     create_directory_for(file_name)
@@ -138,10 +138,10 @@ def init(cam_ip, channel):
     CameraSdk.init(DEFAULT_TIMEOUT_SECONDS, channel)
 
 
-def do_work(camera_ip, start_datetime_str, end_datetime_str, use_utc_time, content_type):
+def do_work(camera_ip, start_datetime_str, end_datetime_str, use_utc_time, content_type, channel):
     logger = Logger.get_logger()
     try:
-        logger.info('Processing cam {}: downloading {}'.format(camera_ip, content_type))
+        logger.info('Processing cam {} on channel {}: downloading {}'.format(camera_ip, channel, content_type))
         logger.info('{} time is used'.format("UTC" if use_utc_time else "Camera's local"))
 
         auth_type = CameraSdk.get_auth_type(camera_ip, user_name, user_password)
@@ -157,7 +157,7 @@ def do_work(camera_ip, start_datetime_str, end_datetime_str, use_utc_time, conte
 
         utc_time_interval = TimeInterval.from_string(start_datetime_str, end_datetime_str, local_time_offset).to_utc()
 
-        download_media(auth_handler, camera_ip, utc_time_interval, content_type)
+        download_media(auth_handler, camera_ip, utc_time_interval, content_type, channel)
 
     except requests.exceptions.ConnectionError as e:
         logger.error('Connection error: {}'.format(e))
@@ -207,7 +207,7 @@ def main():
 
             content_type = ContentType.PHOTO if parameters.photo else ContentType.VIDEO
 
-            do_work(camera_ip, start_datetime_str, end_datetime_str, parameters.utc, content_type)
+            do_work(camera_ip, start_datetime_str, end_datetime_str, parameters.utc, content_type, channel)
 
         except KeyboardInterrupt:
             print('')

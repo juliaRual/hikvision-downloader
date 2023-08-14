@@ -5,10 +5,11 @@ Ready-to-use script is located in **release** folder.
 
 ```
 usage: 
-  media_download.py [-u] [-p] CAM_IP START_DATE START_TIME END_DATE END_TIME
+  media_download.py [-u] [-p] CAM_IP CHANNEL START_DATE START_TIME END_DATE END_TIME
 
 positional arguments:
   IP           camera's IP address
+  CHANNEL      camera's channel
   START_DATE   start date of interval
   START_TIME   start time of interval
   END_DATE     end date of interval
@@ -22,6 +23,6 @@ optional arguments:
 
 
 Examples:
-  video_download.py 10.10.10.10 2020-04-15 00:30:00 2020-04-15 10:59:59
-  video_download.py -u 10.10.10.10 2020-04-15 00:30:00 2020-04-15 10:59:59
+  video_download.py 10.10.10.10 101 2020-04-15 00:30:00 2020-04-15 10:59:59
+  video_download.py -u 10.10.10.10 101 2020-04-15 00:30:00 2020-04-15 10:59:59
 ```

@@ -2,7 +2,7 @@
 
 # ====== Parameters ======
 user_name = 'admin'
-user_password = 'qwer1234'
+user_password = 'admin'
 # ====================================================================
 # write logs to log files (False/True)
 write_logs = True
@@ -36,7 +36,6 @@ from src.utils import *
 MAX_NUMBER_OF_FILES_IN_ONE_REQUEST = 50  # не больше 200
 log_file_name_pattern = '{}.log'
 LOGGER_NAME = 'hik_video_downloader'
-
 
 # ====================================================================
 
@@ -128,7 +127,7 @@ def wait_until_camera_rebooted(cam_ip):
     CameraSdk.wait_until_camera_rebooted(cam_ip, CAMERA_REBOOT_TIME_SECONDS, DELAY_BEFORE_CHECKING_AVAILABILITY_SECONDS)
 
 
-def init(cam_ip):
+def init(cam_ip, channel):
     path_to_log_file = base_path_to_log_file + log_file_name_pattern.format(cam_ip)
 
     create_directory_for(path_to_log_file)
@@ -136,7 +135,7 @@ def init(cam_ip):
 
     Logger.init_logger(write_logs, path_to_log_file, MAX_BYTES_LOG_FILE_SIZE, MAX_LOG_FILES_COUNT)
 
-    CameraSdk.init(DEFAULT_TIMEOUT_SECONDS)
+    CameraSdk.init(DEFAULT_TIMEOUT_SECONDS, channel)
 
 
 def do_work(camera_ip, start_datetime_str, end_datetime_str, use_utc_time, content_type):
@@ -169,16 +168,17 @@ def do_work(camera_ip, start_datetime_str, end_datetime_str, use_utc_time, conte
 
 def parse_parameters():
     usage = """
-  %(prog)s [-u] [-p] CAM_IP START_DATE START_TIME END_DATE END_TIME"""
+  %(prog)s [-u] [-p] CAM_IP CHANNEL START_DATE START_TIME END_DATE END_TIME"""
 
     epilog = """
 Examples:
-  %(prog)s 10.145.17.202 2020-04-15 00:30:00 2020-04-15 10:59:59
-  %(prog)s -u 10.145.17.202 2020-04-15 00:30:00 2020-04-15 10:59:59
+  %(prog)s 10.145.17.202 101 2020-04-15 00:30:00 2020-04-15 10:59:59
+  %(prog)s -u 10.145.17.202 101 2020-04-15 00:30:00 2020-04-15 10:59:59
         """
 
     parser = argparse.ArgumentParser(usage=usage, epilog=epilog, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("IP", help="camera's IP address")
+    parser.add_argument("CHANNEL", help="camera's channel")
     parser.add_argument("START_DATE", help="start date of interval")
     parser.add_argument("START_TIME", help="start time of interval")
     parser.add_argument("END_DATE", help="end date of interval")
@@ -199,7 +199,8 @@ def main():
     if parameters:
         try:
             camera_ip = parameters.IP
-            init(camera_ip)
+            channel = parameters.CHANNEL
+            init(camera_ip, channel)
 
             start_datetime_str = parameters.START_DATE + ' ' + parameters.START_TIME
             end_datetime_str = parameters.END_DATE + ' ' + parameters.END_TIME

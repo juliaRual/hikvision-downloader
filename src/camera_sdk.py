@@ -14,6 +14,7 @@ from datetime import timedelta
 from src.track import Track
 
 
+
 class AuthType:
     BASIC = 1
     DIGEST = 2
@@ -90,8 +91,9 @@ class CameraSdk:
 </downloadRequest>"""
 
     @classmethod
-    def init(cls, default_timeout_seconds):
+    def init(cls, default_timeout_seconds, channel):
         cls.default_timeout_seconds = default_timeout_seconds
+        cls.__VIDEO_TRACK_ID = channel
 
     @classmethod
     def get_error_message_from(cls, answer):
@@ -243,6 +245,7 @@ class CameraSdk:
 
     @classmethod
     def get_video_tracks_info(cls, auth_handler, cam_ip, utc_time_interval, max_videos):
+        print(cls.__VIDEO_TRACK_ID)
         return cls.get_tracks_info(auth_handler, cam_ip, utc_time_interval, max_videos, cls.__VIDEO_TRACK_ID)
 
     @classmethod
